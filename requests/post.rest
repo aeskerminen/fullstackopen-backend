@@ -1,7 +1,7 @@
-POST http://localhost:6969/api/persons
+POST http://localhost:9999/api/persons
 Content-Type: application/json
 
 {
-    "content": {"name" : "Artyy", "number": "69"},
+    {"name" : "Artyy", "number": "69"},
     "important": "true"
 }
