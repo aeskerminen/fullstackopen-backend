@@ -1,19 +1,25 @@
+const dotnev = require("dotenv").config();
 const express = require("express");
-const morgan = require("morgan")
-const cors = require('cors')
+const morgan = require("morgan");
+const cors = require("cors");
+
+const Entry = require("./modules/entry");
 
 const app = express();
 
-app.use(cors())
+app.use(cors());
 
 app.use(express.json());
 
-app.use(express.static('dist'))
+app.use(express.static("dist"));
 
-morgan.token('content', function (req, res) { return JSON.stringify(req.body['content']) })
-const FORMAT = ":method :url :status :res[content-length] - :response-time ms :content"
+morgan.token("content", function (req, res) {
+  return JSON.stringify(req.body["content"]);
+});
+const FORMAT =
+  ":method :url :status :res[content-length] - :response-time ms :content";
 
-app.use(morgan(FORMAT))
+app.use(morgan(FORMAT));
 
 const PORT = 9999;
 
@@ -41,7 +47,9 @@ let persons = [
 ];
 
 app.get("/api/persons", (req, resp) => {
-  resp.send(persons);
+  Entry.find({}).then((result) => {
+    resp.json(result);
+  });
 });
 
 app.get("/api/persons/:id", (req, resp) => {
@@ -56,49 +64,53 @@ app.get("/api/persons/:id", (req, resp) => {
 });
 
 app.delete("/api/persons/:id", (req, resp) => {
-    const id = Number(req.params.id)
-    persons = persons.filter(p => p.id !== id)
+  const id = Number(req.params.id);
+  persons = persons.filter((p) => p.id !== id);
 
-    resp.sendStatus(204).end()
-})
+  resp.sendStatus(204).end();
+});
 
 app.post("/api/persons", (req, resp) => {
-    const id = Math.round(Math.random() * 10000)
-    const content = req.body
+  const id = Math.round(Math.random() * 10000);
+  const content = req.body;
 
-    console.log(content)
+  console.log(content);
 
-    const _name = content.name
-    const _number = content.number
+  const _name = content.name;
+  const _number = content.number;
 
-    if(_name === undefined || _name === "") {
-      return resp.status(404).json({
-        'error': 'name is not defined'
-      })
-    }
+  if (_name === undefined || _name === "") {
+    return resp.status(404).json({
+      "error": "name is not defined",
+    });
+  }
 
-    if(persons.find(p => p.name === _name)) {
-      return resp.status(403).json({
-        'error': 'name must be unique'
-      })
-    }
+  if (persons.find((p) => p.name === _name)) {
+    return resp.status(403).json({
+      "error": "name must be unique",
+    });
+  }
 
-    if(_number === undefined || _number == "") {
-      return resp.status(404).json({
-        'error': 'number is not defined'
-      })
-    }
+  if (_number === undefined || _number == "") {
+    return resp.status(404).json({
+      "error": "number is not defined",
+    });
+  }
 
-    const person = {
-        id: id,
-        name: _name,
-        number: _number
-    }
+  const newEntry = new Entry(
+    {
+      id: id,
+      name: _name,
+      number: _number,
+    },
+  );
 
-    persons = persons.concat(person)
+  persons = persons.concat(newEntry);
 
-    resp.send(person)
-})
+  newEntry.save().then((person) => {
+    resp.json(person)
+  })
+});
 
 app.get("/info", (req, resp) => {
   const body = `<div><p>Phonebook has info for ${persons.length} people</p><p>${
