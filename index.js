@@ -13,6 +13,18 @@ app.use(express.json());
 
 app.use(express.static("dist"));
 
+const errorHandler = (error, request, response, next) => {
+  console.error(error.message)
+
+  if (error.name === 'CastError') {
+    return response.status(400).send({ error: 'malformatted id' })
+  }
+
+  next(error)
+}
+
+app.use(errorHandler)
+
 morgan.token("content", function (req, res) {
   return JSON.stringify(req.body["content"]);
 });
@@ -52,26 +64,31 @@ app.get("/api/persons", (req, resp) => {
   });
 });
 
-app.get("/api/persons/:id", (req, resp) => {
-  const id = Number(req.params.id);
+app.get("/api/persons/:id", (req, resp, next) => {
+  const id = (req.params.id);
   const person = persons.find((p) => p.id === id);
 
-  if (person) {
-    resp.send(person);
-  } else {
-    resp.sendStatus(404).end();
-  }
+  Entry.findById(id).then(entry => {
+    if(entry) {
+      resp.json(entry)
+    } else {
+      resp.status(404).end()
+    }
+  }).catch(error => next(error))
 });
 
-app.delete("/api/persons/:id", (req, resp) => {
-  const id = Number(req.params.id);
+app.delete("/api/persons/:id", (req, resp, next) => {
+  const id = (req.params.id);
   persons = persons.filter((p) => p.id !== id);
+
+  Entry.findByIdAndDelete(id).then((result) => {
+    resp.status(204).end()
+  }).catch(error => next(error))
 
   resp.sendStatus(204).end();
 });
 
 app.post("/api/persons", (req, resp) => {
-  const id = Math.round(Math.random() * 10000);
   const content = req.body;
 
   console.log(content);
@@ -99,7 +116,6 @@ app.post("/api/persons", (req, resp) => {
 
   const newEntry = new Entry(
     {
-      id: id,
       name: _name,
       number: _number,
     },
