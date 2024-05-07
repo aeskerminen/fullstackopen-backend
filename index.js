@@ -14,15 +14,14 @@ app.use(express.json());
 app.use(express.static("dist"));
 
 const errorHandler = (error, request, response, next) => {
-  console.error(error.message)
+  console.error(error.message);
 
-  if (error.name === 'CastError') {
-    return response.status(400).send({ error: 'malformatted id' })
+  if (error.name === "CastError") {
+    return response.status(400).send({ error: "malformatted id" });
   }
 
-  next(error)
-}
-
+  next(error);
+};
 
 morgan.token("content", function (req, res) {
   return JSON.stringify(req.body["content"]);
@@ -32,11 +31,9 @@ const FORMAT =
 
 app.use(morgan(FORMAT));
 
-app.use(errorHandler)
-
+app.use(errorHandler);
 
 const PORT = 9999;
-
 
 app.get("/api/persons", (req, resp) => {
   Entry.find({}).then((result) => {
@@ -45,22 +42,41 @@ app.get("/api/persons", (req, resp) => {
 });
 
 app.get("/api/persons/:id", (req, resp, next) => {
-  const id = (req.params.id);
+  const id = req.params.id;
 
-  Entry.findById(id).then(entry => {
-    if(entry) {
-      resp.json(entry)
+  Entry.findById(id).then((entry) => {
+    if (entry) {
+      resp.json(entry);
     } else {
-      resp.status(404).end()
+      resp.status(404).end();
     }
-  }).catch(error => next(error))
+  }).catch((error) => next(error));
 });
 
 app.delete("/api/persons/:id", (req, resp, next) => {
-  const id = (req.params.id);
+  const id = req.params.id;
 
   Entry.findByIdAndDelete(id).then((result) => {
-    resp.status(204).end()
+    resp.status(204).end();
+  }).catch((error) => next(error));
+});
+
+app.put("/api/persons/:id", (req, resp, next) => {
+  const id = req.params.id;
+  const content = req.body;
+
+  const _name = content.name;
+  const _number = content.number;
+
+  const newEntry = {
+    name: _name,
+    number: _number,
+  };
+
+  console.log("hello?")
+
+  Entry.findByIdAndUpdate(id, newEntry, {new: true}).then(updatedEntry => {
+    resp.json(updatedEntry)
   }).catch(error => next(error))
 });
 
@@ -100,12 +116,15 @@ app.post("/api/persons", (req, resp, next) => {
   );
 
   newEntry.save().then((person) => {
-    resp.json(person)
-  }).catch((error) => next(error))
+    resp.json(person);
+  }).catch((error) => next(error));
 });
 
 app.get("/info", async (req, resp) => {
-  const body = `<div><p>Phonebook has info for ${await Entry.countDocuments().then((res) => {return res})} people</p><p>${
+  const body = `<div><p>Phonebook has info for ${await Entry.countDocuments()
+    .then((res) => {
+      return res;
+    })} people</p><p>${
     new Date().toLocaleDateString("fi-FI", {
       weekday: "short",
       month: "short",
