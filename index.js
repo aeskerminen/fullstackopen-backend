@@ -23,7 +23,6 @@ const errorHandler = (error, request, response, next) => {
   next(error)
 }
 
-app.use(errorHandler)
 
 morgan.token("content", function (req, res) {
   return JSON.stringify(req.body["content"]);
@@ -33,30 +32,11 @@ const FORMAT =
 
 app.use(morgan(FORMAT));
 
+app.use(errorHandler)
+
+
 const PORT = 9999;
 
-let persons = [
-  {
-    id: 1,
-    name: "Arto Hellas",
-    number: "040-123456",
-  },
-  {
-    id: 2,
-    name: "Ada Lovelace",
-    number: "39-44-5323532",
-  },
-  {
-    id: 3,
-    name: "Dan Abramov",
-    number: "12-43-234345",
-  },
-  {
-    id: 4,
-    name: "Mary Poppendick",
-    number: "39-23-6423122",
-  },
-];
 
 app.get("/api/persons", (req, resp) => {
   Entry.find({}).then((result) => {
@@ -66,7 +46,6 @@ app.get("/api/persons", (req, resp) => {
 
 app.get("/api/persons/:id", (req, resp, next) => {
   const id = (req.params.id);
-  const person = persons.find((p) => p.id === id);
 
   Entry.findById(id).then(entry => {
     if(entry) {
@@ -79,16 +58,13 @@ app.get("/api/persons/:id", (req, resp, next) => {
 
 app.delete("/api/persons/:id", (req, resp, next) => {
   const id = (req.params.id);
-  persons = persons.filter((p) => p.id !== id);
 
   Entry.findByIdAndDelete(id).then((result) => {
     resp.status(204).end()
   }).catch(error => next(error))
-
-  resp.sendStatus(204).end();
 });
 
-app.post("/api/persons", (req, resp) => {
+app.post("/api/persons", (req, resp, next) => {
   const content = req.body;
 
   console.log(content);
@@ -102,11 +78,13 @@ app.post("/api/persons", (req, resp) => {
     });
   }
 
+  /*
   if (persons.find((p) => p.name === _name)) {
     return resp.status(403).json({
       "error": "name must be unique",
     });
   }
+  */
 
   if (_number === undefined || _number == "") {
     return resp.status(404).json({
@@ -121,15 +99,13 @@ app.post("/api/persons", (req, resp) => {
     },
   );
 
-  persons = persons.concat(newEntry);
-
   newEntry.save().then((person) => {
     resp.json(person)
-  })
+  }).catch((error) => next(error))
 });
 
-app.get("/info", (req, resp) => {
-  const body = `<div><p>Phonebook has info for ${persons.length} people</p><p>${
+app.get("/info", async (req, resp) => {
+  const body = `<div><p>Phonebook has info for ${await Entry.countDocuments().then((res) => {return res})} people</p><p>${
     new Date().toLocaleDateString("fi-FI", {
       weekday: "short",
       month: "short",
