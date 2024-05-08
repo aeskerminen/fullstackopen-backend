@@ -73,8 +73,6 @@ app.put("/api/persons/:id", (req, resp, next) => {
     number: _number,
   };
 
-  console.log("hello?")
-
   Entry.findByIdAndUpdate(id, newEntry, {new: true}).then(updatedEntry => {
     resp.json(updatedEntry)
   }).catch(error => next(error))
@@ -87,26 +85,6 @@ app.post("/api/persons", (req, resp, next) => {
 
   const _name = content.name;
   const _number = content.number;
-
-  if (_name === undefined || _name === "") {
-    return resp.status(404).json({
-      "error": "name is not defined",
-    });
-  }
-
-  /*
-  if (persons.find((p) => p.name === _name)) {
-    return resp.status(403).json({
-      "error": "name must be unique",
-    });
-  }
-  */
-
-  if (_number === undefined || _number == "") {
-    return resp.status(404).json({
-      "error": "number is not defined",
-    });
-  }
 
   const newEntry = new Entry(
     {
