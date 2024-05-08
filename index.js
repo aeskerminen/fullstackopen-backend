@@ -73,9 +73,14 @@ app.put("/api/persons/:id", (req, resp, next) => {
     number: _number,
   };
 
-  Entry.findByIdAndUpdate(id, newEntry, {new: true}).then(updatedEntry => {
-    resp.json(updatedEntry)
-  }).catch(error => next(error))
+  if (!(/\d{2,3}-\d*$/.test(_number)) && _number.length < 8) {
+    resp.status(400).end();
+  } else {
+    Entry.findByIdAndUpdate(id, newEntry, { new: true, runValidators: true })
+      .then((updatedEntry) => {
+        resp.json(updatedEntry);
+      }).catch((error) => next(error));
+  }
 });
 
 app.post("/api/persons", (req, resp, next) => {
