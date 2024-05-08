@@ -19,9 +19,6 @@
     "nodemon": "^3.1.0"
   },
   "devDependencies": {
-    "@stylistic/eslint-plugin-js": "^1.8.1",
-    "eslint": "^8.22.0",
-    "@eslint/js": "^9.2.0",
-    "eslint-plugin-react": "^7.34.1"
+   
   }
 }
