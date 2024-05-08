@@ -11,11 +11,17 @@
   "author": "Artturi Kerminen",
   "license": "ISC",
   "dependencies": {
+    "@eslint/js": "^9.2.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
+    "eslint-plugin-react": "^7.34.1",
     "express": "^4.19.2",
     "mongoose": "^8.3.4",
     "morgan": "^1.10.0",
     "nodemon": "^3.1.0"
+  },
+  "devDependencies": {
+    "@stylistic/eslint-plugin-js": "^1.8.1",
+    "eslint": "^8.22.0"
   }
 }
